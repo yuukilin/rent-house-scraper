@@ -1,0 +1,47 @@
+name: Rent Scraper
+
+# ❶ 觸發條件：每天台北時間 10:00、15:00；也可手動按 Run
+on:
+  schedule:
+    # GitHub 用 UTC，+8 就是 02:00 / 07:00
+    - cron: "0 2,7 * * *"
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ❷ 把 repo 內容抓下來
+      - uses: actions/checkout@v4
+
+      # ❸ 如果 seen_listings.json 有更新就 commit 回 repo，必須保留用戶資訊
+      - name: Configure Git user
+        run: |
+          git config --global user.email "bot@example.com"
+          git config --global user.name "GitHub Actions"
+
+      # ❹ 安裝 Python
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # ❺ 安裝依賴
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # ❻ 跑爬蟲
+      - name: Run scraper
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:  ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python rent_scraper.py
+
+      # ❼ 如果 seen_listings.json 有變動就 commit 回去，持久化狀態
+      - name: Commit updated state
+        run: |
+          if git status --porcelain | grep seen_listings.json; then
+            git add seen_listings.json
+            git commit -m "chore: update seen_listings [skip ci]" || true
+            git push origin HEAD:main
+          fi
