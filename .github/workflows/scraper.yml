@@ -46,5 +46,6 @@ jobs:
           if git status --porcelain | grep seen_listings.json; then
             git add seen_listings.json
             git commit -m "chore: update seen_listings [skip ci]" || true
+            git pull --rebase origin main         # ★ 先把遠端拉下來疊在最新
             git push origin HEAD:main
           fi
