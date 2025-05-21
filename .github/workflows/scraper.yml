@@ -40,7 +40,7 @@ jobs:
           TELEGRAM_CHAT_ID:  ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python rent_scraper.py
 
-      # ❼ 如果 seen_listings.json 有變動就 commit 回去，持久化狀態
+      # ❼ 如果 seen_addresses.json 有變動就 commit 回去，持久化狀態
       - name: Commit updated state
         run: |
           if git status --porcelain | grep seen_addresses.json; then
